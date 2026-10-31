@@ -1,0 +1,12 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fix Mobile · Sistema de reparaciones</title>
+<link rel="stylesheet" href="styles.css"></head><body>
+<section id="login"><form class="box" onsubmit="return L(event)"><div class="logo">F</div><h1>FIX MOBILE</h1><p class="lbl">Control de reparaciones · Acceso</p><br>
+<label class="lbl">Usuario</label><input id="u" autocomplete="username" required><label class="lbl">Contraseña</label><input id="pw" type="password" autocomplete="current-password" required>
+<button class="btn" style="width:100%">Ingresar</button><p id="er" class="sal"></p><small style="color:var(--m)">Versión de muestra · datos ficticios</small></form></section>
+<div id="app" hidden><nav><div style="display:flex;gap:10px;align-items:center;margin-bottom:14px"><div class="logo">F</div><div><b>FIX MOBILE</b><div class="lbl">Reparaciones</div></div></div><div id="nv" style="display:contents"></div></nav>
+<main><div class="top"><div><span class="lbl" id="rl"></span><div id="nm" style="font-weight:700"></div></div><button class="btn g" onclick="sessionStorage.clear();location.reload()">Salir</button></div><h2 id="ti"></h2><div id="vw"></div></main></div>
+<button id="bb" hidden onclick="bw.hidden=!bw.hidden" aria-label="Asistente">💬</button>
+<div id="bw" hidden><div id="bm"><p>Hola, soy el asistente de Fix Mobile. Pregúntame por una orden (escribe su número), stock, precios o entregas tardías.</p></div><form onsubmit="return Q(event)"><input id="bi" placeholder="Escribe tu pregunta" autocomplete="off"><button class="btn">Enviar</button></form></div>
+<script src="data.js"></script>
+<script src="app.js"></script></body></html>
+
