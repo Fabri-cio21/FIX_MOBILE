@@ -1,22 +1,81 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fix Mobile · Sistema de reparaciones</title>
-<link rel="stylesheet" href="styles.css"></head><body>
-<div id="pub"><header class="ph"><div class="br"><div class="logo">F</div><div><b>FIX MOBILE</b><div class="lbl">Reparación de celulares</div></div></div>
-<nav class="pn"><a href="#servicios">Servicios</a><a href="#proceso">Cómo funciona</a><a href="#seguimiento">Seguimiento</a></nav>
-<div><button class="btn g" onclick="showL()">Acceso del personal</button> <button class="btn" onclick="showL()">Portal del cliente</button></div></header>
-<section class="hero"><div><span class="lbl">Bienvenido a Fix Mobile</span><h1>Tu celular, de vuelta en buenas manos.</h1><p>Reparación de pantallas, baterías y puertos de carga, con seguimiento de tu orden en línea.</p>
-<a class="btn" href="#seguimiento">Consultar mi orden</a> <button class="btn g" onclick="showL()">Ingresar a mi portal</button><p class="chips">✓ Seguimiento en línea &nbsp; ✓ Control de repuestos &nbsp; ✓ Garantía por orden</p></div>
-<div class="c hq"><span class="lbl">¿Qué necesitas hoy?</span><a class="row" href="#servicios">🔧 Reparar mi equipo <span>→</span></a><a class="row" href="#seguimiento">📍 Ver el estado de mi orden <span>→</span></a><a class="row" href="#proceso">🛠 Cómo es el proceso <span>→</span></a><div class="row" onclick="bw.hidden=false">💬 Preguntar al asistente <span>→</span></div></div></section>
-<section id="servicios"><span class="lbl">Servicios</span><h2>Reparaciones pensadas para tu equipo</h2><div class="cards" id="sv"></div></section>
-<section id="proceso"><span class="lbl">Cómo funciona</span><h2>De la recepción a la entrega</h2><div class="steps st4"><div><b>01</b>Ingreso<br><small>Registramos tu equipo y la falla</small></div><div><b>02</b>Diagnóstico<br><small>El técnico revisa y confirma el repuesto</small></div><div><b>03</b>Reparación<br><small>Seguimiento del avance en línea</small></div><div><b>04</b>Entrega<br><small>Retiras tu equipo con garantía</small></div></div></section>
-<section id="seguimiento"><span class="lbl">Seguimiento</span><h2>Consulta el estado de tu orden</h2><form class="fl" onsubmit="return TK(event)"><input id="tn" placeholder="Número de orden, por ejemplo 186" required><button class="btn">Consultar</button></form><div id="tk"></div></section>
-<footer class="pf">Fix Mobile · Prototipo académico · Todos los datos de esta demostración son ficticios.</footer></div>
-<section id="login" hidden><form class="box" onsubmit="return L(event)"><div class="logo">F</div><h1>FIX MOBILE</h1><p class="lbl">Control de reparaciones · Acceso</p><br>
-<label class="lbl">Usuario</label><input id="u" autocomplete="username" required><label class="lbl">Contraseña</label><input id="pw" type="password" autocomplete="current-password" required>
-<button class="btn" style="width:100%">Ingresar</button><p id="er" class="sal"></p><a href="#" onclick="lg=0;boot();return false" style="color:var(--l)">← Volver al inicio</a><br><br><small style="color:var(--m)">Versión de muestra · datos ficticios</small></form></section>
-<div id="app" hidden><nav><div style="display:flex;gap:10px;align-items:center;margin-bottom:14px"><div class="logo">F</div><div><b>FIX MOBILE</b><div class="lbl">Reparaciones</div></div></div><div id="nv" style="display:contents"></div></nav>
-<main><div class="top"><div><span class="lbl" id="rl"></span><div id="nm" style="font-weight:700"></div></div><button class="btn g" onclick="sessionStorage.clear();location.reload()">Salir</button></div><h2 id="ti"></h2><div id="vw"></div></main></div>
-<button id="bb" onclick="bw.hidden=!bw.hidden" aria-label="Asistente">💬</button>
-<div id="bw" hidden><div id="bm"><p>Hola, soy el asistente de Fix Mobile. Pregúntame por una orden (escribe su número), stock, precios o entregas tardías.</p></div><form onsubmit="return Q(event)"><input id="bi" placeholder="Escribe tu pregunta" autocomplete="off"><button class="btn">Enviar</button></form></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fix Mobile · Dashboard de reparaciones y repuestos</title>
+<meta name="description" content="Dashboard de seguimiento de entregas, repuestos y desempeño del taller Fix Mobile.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("fm-theme2")||"dark"}catch(e){}</script>
+</head>
+<body>
+<div id="splash" role="status" aria-live="polite"><div class="sp-box">
+<svg class="sp-ico" viewBox="0 0 64 64" width="84" height="84" aria-hidden="true"><rect x="18" y="4" width="28" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><line x1="27" y1="10" x2="37" y2="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="52" r="2.5" fill="currentColor"/><circle class="sp-ring" cx="32" cy="31" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="16 48" stroke-linecap="round"/></svg>
+<h1>FIX MOBILE</h1><p>Dashboard de reparaciones y repuestos</p><div class="sp-bar"><i></i></div><small>Cargando información…</small></div></div>
+<header class="top">
+  <div class="brand"><h1>FIX MOBILE</h1><p>180 órdenes entregadas, julio a setiembre de 2026.</p></div>
+  <div class="filters" role="group" aria-label="Filtros">
+    <label>Mes <select id="fMes"><option>Todos</option><option>Jul</option><option>Ago</option><option>Set</option></select></label>
+    <label>Técnico <select id="fTec"><option>Todos</option><option>Jorge</option><option>Diego</option></select></label>
+    <button id="reset" type="button">Limpiar filtros</button>
+    <button id="print" type="button">Exportar PDF</button>
+    <button id="theme" type="button" aria-label="Cambiar tema claro u oscuro">Modo oscuro</button>
+  </div>
+</header>
+<nav class="tabs" aria-label="Páginas del dashboard"><button type="button" class="on" data-p="p1">Resumen operativo</button><button type="button" data-p="p2">Análisis y hallazgos</button></nav>
+<main>
+<div class="pg" id="p1">
+  <section aria-labelledby="h-hoy">
+    <h2 id="h-hoy" class="sec">Qué requiere acción hoy</h2>
+    <div class="two">
+      <div class="panel"><h3>Órdenes abiertas</h3><ul class="sem" id="sem"></ul><p class="note" id="corte"></p></div>
+      <div class="panel"><h3>Repuestos bajo el mínimo</h3><ul class="stk" id="stk"></ul><p class="note">El proveedor tarda 2,2 días en promedio: reponer hoy evita detenciones.</p></div>
+    </div>
+  </section>
+  <section aria-labelledby="h-kpi">
+    <h2 id="h-kpi" class="sec">Indicadores del periodo</h2>
+    <div class="xp" id="xp"></div>
+    <div class="cards" id="cards"></div>
+  </section>
+  <section aria-labelledby="h-graf">
+    <h2 id="h-graf" class="sec">Tendencias y comparaciones</h2>
+    <div class="grid">
+      <div class="panel"><h3>Tardías y detenidas por mes (%)</h3><div class="chart"><canvas id="c1"></canvas></div><p class="note">La línea verde es la meta de entregas tardías (10 %). No cambia con el filtro de mes.</p></div>
+      <div class="panel"><h3>Entregas a tiempo por técnico (%)</h3><div class="chart"><canvas id="c2"></canvas></div><p class="note">Meta: 90 %.</p></div>
+      <div class="panel"><h3>Ingresos mensuales (S/)</h3><div class="chart"><canvas id="c3"></canvas></div><p class="note" id="n3"></p></div>
+      </div>
+  </section>
+</div>
+<div class="pg" id="p2" hidden>
+  <section aria-labelledby="h-graf2">
+    <h2 id="h-graf2" class="sec">Análisis detallado</h2>
+    <div class="grid">
+<div class="panel"><h3>Servicios aplicados y % de tardías</h3><div class="chart"><canvas id="c4"></canvas></div><p class="note">Los servicios con pocas órdenes son indicativos.</p></div>
+      <div class="panel"><h3>Tardías: con y sin falta de repuesto</h3><div class="chart"><canvas id="c7"></canvas></div><p class="note">El stock no explica todos los retrasos.</p></div>
+      <div class="panel"><h3>% de tardías por técnico y mes</h3><div class="chart"><canvas id="c8"></canvas></div><p class="note">No cambia con los filtros.</p></div>
+      <div class="panel"><h3>Órdenes ingresadas en lunes y otros días (% tardías)</h3><div class="chart"><canvas id="c9"></canvas></div></div>
+      <div class="panel"><h3>Repuestos más usados (unidades)</h3><div class="chart"><canvas id="c5"></canvas></div><p class="note">Todas las órdenes registradas; no cambia con los filtros.</p></div>
+      <div class="panel"><h3>Cobranza por método de pago</h3><div class="chart"><canvas id="c10"></canvas></div><p class="note">230 pagos confirmados, S/ 27 776.</p></div>
+    </div>
+  </section>
+<section aria-labelledby="h-hal">
+    <h2 id="h-hal" class="sec">Hallazgos y mejora esperada</h2>
+    <div class="two">
+      <div class="panel"><h3>Siete hallazgos del análisis</h3><ol class="hal" id="hal"></ol></div>
+      <div class="panel">
+        <h3>Escenarios de reducción de tardías</h3>
+        <div id="esc"></div>
+        <p class="note">Ejercicio ilustrativo, no una predicción. Meta propuesta: 10 %.</p>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+<footer>Proyecto Fix Mobile, Capítulo VI: Analítica y visualización de datos.</footer>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="data.js"></script>
-<script src="app.js"></script></body></html>
-
+<script src="app.js"></script>
+</body>
+</html>

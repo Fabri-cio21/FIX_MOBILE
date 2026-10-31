@@ -1,41 +1,194 @@
-const $=s=>document.querySelector(s),bw=$('#bw');
-let S=JSON.parse(localStorage.getItem('fm')||'null')||{us:D.us,pend:[],ord:D.ord,stk:D.stk},me=JSON.parse(sessionStorage.getItem('me')||'null'),cur;
-const save=()=>localStorage.setItem('fm',JSON.stringify(S)),
-H=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join(''),
-R={gerente:'Gerente',tecnico:'Técnico',inventario:'Inventario',atencion:'Atención',cliente:'Cliente'},
-M={gerente:['Panel','Órdenes','Inventario','Equipo'],tecnico:['Mis órdenes'],inventario:['Inventario'],atencion:['Órdenes','Nueva orden','Solicitar técnico'],cliente:['Mi orden']},
-E={Ingresado:'En Proceso','En Proceso':'Terminado',Terminado:'Entregado'},
-tg=e=>`<span class="tag ${{Entregado:'m',Terminado:'l','En Proceso':'p'}[e]||'s'}">${e}</span>`,vc=o=>o.est!='Entregado'&&o.fp<D.corte;
-async function L(e){e.preventDefault();const u=S.us.find(x=>x.u==$('#u').value.trim().toLowerCase());
- if(u&&u.h==await H($('#pw').value)){me=u;sessionStorage.setItem('me',JSON.stringify(u));boot()}else $('#er').textContent='Usuario o contraseña incorrectos.';return false}
-let lg=0;const showL=()=>{lg=1;boot();$('#u').focus()};function boot(){$('#pub').hidden=!!me||lg;$('#login').hidden=!!me||!lg;$('#app').hidden=!me;if(!me)return;$('#rl').textContent=R[me.r];$('#nm').textContent=me.n;
- $('#nv').innerHTML=M[me.r].map(v=>`<button onclick="go('${v}')">${v}</button>`).join('');go(M[me.r][0])}
-function go(v){cur=v;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.textContent==v));$('#ti').textContent=v;$('#vw').innerHTML=V[v]()}
-function tbl(a,f){return`<div class="tw"><table><tr><th>#<th>Cliente<th>Equipo<th>Estado<th>Técnico<th>Prometida${f?'<th>':''}</tr>`+a.map(o=>`<tr><td>${o.id}<td>${o.cl}<td>${o.eq}<td>${tg(o.est)}<td>${o.tec||'—'}<td class="${vc(o)?'sal':''}">${o.fp}${f?'<td>'+f(o):''}`).join('')+'</table></div>'}
-const adv=id=>{const o=S.ord.find(x=>x.id==id);o.est=E[o.est];save();go(cur)},
-dec=(i,ok)=>{const p=S.pend.splice(i,1)[0];if(ok)S.us.push({u:p.u,n:p.n,f:p.n.split(' ')[0],r:'tecnico',h:p.h});save();go(cur)},
-rep=i=>{S.stk[i][1]+=5;save();go(cur)};
-const V={
-Panel:()=>{const v=S.ord.filter(vc).length,b=S.stk.filter(s=>s[1]<s[2]).length;return`<div class="cards"><div class="c"><span class="lbl">Órdenes</span><b>${D.k.n}</b><small>jul–set</small></div><div class="c"><span class="lbl">Entregas tardías</span><b class="sal">20,0 %</b><small>36 de 180</small></div><div class="c"><span class="lbl">Detenidas</span><b>8,3 %</b><small>15 por falta de repuesto</small></div><div class="c"><span class="lbl">Vencidas ahora</span><b class="sal">${v}</b><small>corte ${D.corte}</small></div></div>
-<div class="c"><span class="lbl">Qué revisar primero</span><div class="row" onclick="go('Órdenes')"><span>01 · Órdenes vencidas (${v})</span>→</div><div class="row" onclick="go('Inventario')"><span>02 · Repuestos por agotarse (${b})</span>→</div><div class="row" onclick="go('Equipo')"><span>03 · Solicitudes de técnico (${S.pend.length})</span>→</div></div>`},
-'Órdenes':()=>tbl(S.ord,me.r=='atencion'?o=>o.est=='Terminado'?`<button class="btn" onclick="adv(${o.id})">Entregar</button>`:'':0),
-'Mis órdenes':()=>tbl(S.ord.filter(o=>o.tec==me.f),o=>E[o.est]&&o.est!='Terminado'?`<button class="btn" onclick="adv(${o.id})">Pasar a ${E[o.est]}</button>`:''),
-Inventario:()=>`<div class="tw"><table><tr><th>Repuesto<th>Stock<th>Mínimo<th><th>${me.r=='inventario'?'<th>':''}</tr>`+S.stk.map((s,i)=>{const lo=s[1]<s[2];return`<tr><td>${s[0]}<td class="${lo?'sal':''}">${s[1]}<td>${s[2]}<td><span class="bar ${lo?'lo':''}"><i style="width:${Math.min(100,100*s[1]/s[2])}%"></i></span>${me.r=='inventario'?`<td><button class="btn g" onclick="rep(${i})">+5</button>`:''}`}).join('')+'</table></div>',
-'Nueva orden':()=>`<form class="c" onsubmit="return NO(event)" style="max-width:460px"><label class="lbl">Cliente</label><input id="a1" required><label class="lbl">Equipo (marca y modelo)</label><input id="a2" required><label class="lbl">Falla reportada</label><textarea id="a3" required></textarea><label class="lbl">Técnico</label><select id="a4">${S.us.filter(x=>x.r=='tecnico').map(x=>`<option>${x.f}`).join('')}</select><button class="btn">Registrar orden</button></form>`,
-'Solicitar técnico':()=>`<form class="c" onsubmit="return ST(event)" style="max-width:460px"><p class="lbl">El gerente debe aprobar la solicitud</p><label class="lbl">Nombre completo</label><input id="a1" required><label class="lbl">Usuario</label><input id="a2" required><label class="lbl">Contraseña inicial</label><input id="a3" type="password" minlength="6" required><button class="btn">Enviar solicitud</button></form><div class="c"><span class="lbl">Pendientes</span>${S.pend.map(p=>`<div class="row">${p.n} · ${p.u}<span class="tag s">Esperando al gerente</span></div>`).join('')||'<p>Sin solicitudes.</p>'}</div>`,
-Equipo:()=>`<div class="c"><span class="lbl">Solicitudes de técnico</span>${S.pend.map((p,i)=>`<div class="row" style="cursor:default"><span>${p.n} · ${p.u} · pidió ${p.by}</span><span><button class="btn" onclick="dec(${i},1)">Aprobar</button> <button class="btn r" onclick="dec(${i},0)">Rechazar</button></span></div>`).join('')||'<p>No hay solicitudes pendientes.</p>'}</div><div class="c"><span class="lbl">Personal con acceso</span>${S.us.map(x=>`<div class="row" style="cursor:default">${x.n}<span class="tag p">${R[x.r]}</span></div>`).join('')}</div>`,
-'Mi orden':()=>{const a=S.ord.filter(o=>o.cl==me.cl);return a.map(o=>`<div class="c"><span class="lbl">Orden #${o.id}</span><h3>${o.eq}</h3><div class="steps">${['Ingresado','En Proceso','Terminado','Entregado'].map((s,i,A)=>`<div class="${i<=A.indexOf(o.est)?'on':''}">${s}</div>`).join('')}</div><small>Fecha prometida: ${o.fp} · Técnico: ${o.tec||'por asignar'}</small></div>`).join('')||'<p>No tienes órdenes registradas.</p>'}};
-function NO(e){e.preventDefault();const id=Math.max(...S.ord.map(o=>o.id))+1,d=new Date(D.corte);d.setDate(d.getDate()+3);S.ord.push({id,cl:$('#a1').value,eq:$('#a2').value,est:'Ingresado',tec:$('#a4').value,fp:d.toISOString().slice(0,10)});save();go('Órdenes');return false}
-async function ST(e){e.preventDefault();S.pend.push({n:$('#a1').value,u:$('#a2').value.toLowerCase(),h:await H($('#a3').value),by:me.n});save();go(cur);return false}
-const nz=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-function bot(q){q=nz(q);const m=q.match(/\d{3}/);
- if(m){const o=S.ord.find(x=>x.id==m[0]);return!o||(me&&!me||me.r=='cliente'&&o.cl!=me.cl)?'No encuentro esa orden en tu cuenta.':`Orden ${o.id}: ${o.est}, ${me?'técnico '+(o.tec||'por asignar')+', ':''}fecha prometida ${o.fp}.`}
- if(/stock|repuesto|inventario/.test(q)){if(!me||me.r=='cliente')return'El inventario es interno. Atención puede confirmarte si hay repuesto para tu equipo.';const l=S.stk.filter(s=>s[1]<s[2]);return l.length?'Bajo el mínimo: '+l.map(s=>`${s[0]} (${s[1]} de ${s[2]})`).join(', ')+'.':'Todo el stock está sobre el mínimo.'}
- if(/precio|costo|cuanto|servicio/.test(q))return'Precios base: '+D.svc.map(s=>`${s[0]} S/ ${s[1]}`).join('; ')+'. El total depende del repuesto.';
- if(/tard|retras|cumpl/.test(q))return !me||me.r=='cliente'?'Ese dato es interno.':'Entregas tardías: 20,0 % (36 de 180). Meta: 10 % o menos.';
- if(/tecnico|agregar|nuevo/.test(q))return'Atención solicita al técnico y el gerente lo aprueba en la sección Equipo.';
- return'Puedo ayudarte con: estado de una orden (escribe su número), stock de repuestos, precios de servicios y entregas tardías.'}
-function Q(e){e.preventDefault();const i=$('#bi'),m=$('#bm');m.innerHTML+=`<p class="u"></p><p>${bot(i.value)}</p>`;m.children[m.children.length-2].textContent=i.value;i.value='';m.scrollTop=1e9;return false}
-function TK(e){e.preventDefault();const o=S.ord.find(x=>x.id==$('#tn').value.replace(/\D/g,''));$('#tk').innerHTML=o?`<div class="c"><span class="lbl">Orden #${o.id}</span><div class="steps">${['Ingresado','En Proceso','Terminado','Entregado'].map((s,i,A)=>`<div class="${i<=A.indexOf(o.est)?'on':''}">${s}</div>`).join('')}</div><small>Fecha prometida: ${o.fp}</small></div>`:'<p class="sal">No encontramos esa orden. En esta demostración existen las órdenes 178 a 186.</p>';return false}
-$('#sv').innerHTML=D.svc.map(s=>`<div class="c"><h3>${s[0]}</h3><small>Desde S/ ${s[1]}</small></div>`).join('');
-boot()
+"use strict";
+const $ = s => document.querySelector(s);
+const MESES = ["Jul","Ago","Set"], TECS = ["Jorge","Diego"];
+const pct = (a,b) => b ? 100*a/b : 0;
+const sum = (a,f) => a.reduce((s,x) => s+f(x), 0);
+const nf = (n,d=0) => n.toLocaleString("es-PE",{minimumFractionDigits:d,maximumFractionDigits:d});
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const charts = {};
+
+/* ---------- Plugins: cifras sobre el gráfico y línea de meta ---------- */
+Chart.register({
+  id:"vl",
+  afterDatasetsDraw(ch){
+    const c = ch.ctx, horiz = ch.options.indexAxis === "y";
+    c.save(); c.font = "600 11px " + css("--font"); c.fillStyle = css("--ink");
+    c.textAlign = horiz ? "left" : "center"; c.textBaseline = horiz ? "middle" : "bottom";
+    ch.data.datasets.forEach((d,i) => {
+      if (!d.labels || ch.getDatasetMeta(i).hidden) return;
+      ch.getDatasetMeta(i).data.forEach((el,j) => {
+        const v = d.data[j]; if (v == null) return;
+        const t = (d.fmt || String)(v);
+        horiz ? c.fillText(t, el.x+5, el.y) : c.fillText(t, el.x, el.y-5);
+      });
+    });
+    c.restore();
+  }
+},{
+  id:"meta",
+  afterDatasetsDraw(ch,_,o){
+    if (o.value == null) return;
+    const a = ch.chartArea, c = ch.ctx, y = ch.scales.y.getPixelForValue(o.value);
+    c.save(); c.setLineDash([6,4]); c.strokeStyle = c.fillStyle = css("--grn"); c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(a.left,y); c.lineTo(a.right,y); c.stroke(); c.setLineDash([]);
+    c.font = "700 11px " + css("--font"); c.textAlign = "right"; c.textBaseline = "bottom";
+    c.fillText(o.label, a.right, y-3); c.restore();
+  }
+});
+
+
+function draw(id,type,data,opts={}){
+  charts[id]?.destroy();
+  Chart.defaults.color = css("--muted"); Chart.defaults.font.family = css("--font"); Chart.defaults.borderColor = css("--line");
+  const plugins = Object.assign({legend:{display:data.datasets.length>1,position:"bottom",labels:{boxWidth:10,usePointStyle:true}}}, opts.plugins);
+  charts[id] = new Chart($("#"+id),{type,data,options:Object.assign({responsive:true,maintainAspectRatio:false,layout:{padding:{top:18,right:28}}},opts,{plugins})});
+}
+
+/* ---------- Tarjetas de KPI (valor, meta y estado) ---------- */
+function estado(v,meta,menorEsMejor,tol){
+  const ok = menorEsMejor ? v <= meta : v >= meta;
+  if (ok) return "ok";
+  const dif = menorEsMejor ? v-meta : meta-v;
+  return dif <= tol ? "warn" : "bad";
+}
+function kpis(o,tec,mes){
+  const n=o.length, tar=sum(o,x=>x.tardia), det=sum(o,x=>x.det), ing=sum(o,x=>x.total);
+  const dias = n ? sum(o,x=>x.dias)/n : 0, tk = n ? ing/n : 0, global = tec==="Todos";
+  const meses = mes==="Todos" ? 3 : 1;
+  const pm=MESES[MESES.indexOf(mes)-1], pa=pm?DATA.orders.filter(x=>x.mes===pm&&(tec==="Todos"||x.tec===tec)):null;
+  const vs=(v,f,d=1,u="")=>{ if(!pa||!pa.length) return ""; const p=f(pa); return " · "+(v>=p?"▲ ":"▼ ")+nf(Math.abs(v-p),d)+u+" vs "+pm; };
+  const dp=sum(o,x=>x.dp), ut=ing?100*(ing-sum(o,x=>x.cr))/ing:0, hoy=new Date(DATA.corte+"T00:00:00"), ab=DATA.abiertas.filter(a=>tec==="Todos"||a.tec===tec), venc=ab.filter(a=>new Date(a.fp+"T00:00:00")<hoy).length;
+  const items = [
+    ["Órdenes entregadas",n,"Aprox. "+nf(n/meses)+" por mes","neu"],
+    ["Entregas tardías",nf(pct(tar,n),1)+" %","Meta ≤ 10 %"+vs(pct(tar,n),a=>pct(sum(a,x=>x.tardia),a.length),1," pts"),estado(pct(tar,n),10,true,5)],
+    ["Detenidas por repuesto",nf(pct(det,n),1)+" %","Meta ≤ 3 %",estado(pct(det,n),3,true,3)],
+    ["Días promedio de reparación",nf(dias,2),"Meta ≤ 2,2 días",estado(dias,2.2,true,.3)],
+    [mes==="Todos"?"Ingresos del periodo":"Ingresos del mes","S/ "+nf(ing),global?"Meta ≥ S/ 8 700 por mes":"La meta es del taller completo",global?estado(ing/meses,8700,false,1000):"neu"],
+    ["Ticket promedio","S/ "+nf(tk,2),"Meta ≥ S/ 145"+vs(tk,a=>sum(a,x=>x.total)/a.length,2),estado(tk,145,false,15)],
+    ["Días perdidos por falta de repuesto",dp,"Meta ≤ 10 por trimestre",estado(dp,10*meses/3,true,5)],
+    ["Utilidad bruta",nf(ut,1)+" %","Meta ≥ 60 %",estado(ut,60,false,5)],
+    ["Repuestos bajo el mínimo",DATA.stock.length,"Meta: 0",DATA.stock.length?"bad":"ok"],
+    ["Órdenes abiertas vencidas",venc+" de "+ab.length,"Meta: 0",venc?"bad":"ok"]
+  ];
+  const med = items.filter(i=>i[3]!=="neu"), cum = med.filter(i=>i[3]==="ok").length;
+  $("#xp").innerHTML = `<span>Metas cumplidas</span><div class="xpbar"><i style="width:${100*cum/med.length}%"></i></div><b>${cum} de ${med.length}</b>`;
+  $("#cards").innerHTML = items.map(([t,v,s,c]) => `<div class="card ${c}"><b>${v}</b><span>${t}</span><small>${s}</small></div>`).join("");
+}
+
+/* ---------- Listas de acción: órdenes abiertas y stock ---------- */
+function accion(){
+  const hoy = new Date(DATA.corte+"T00:00:00");
+  $("#sem").innerHTML = DATA.abiertas.map(a => {
+    const d = Math.round((new Date(a.fp+"T00:00:00")-hoy)/864e5);
+    const c = d<0?"bad":d<=1?"warn":"ok", nom = d<0?"Vencida":d<=1?"Por vencer":"A tiempo";
+    return `<li class="${c}"><span class="dot"></span><span>Orden ${a.id}, ${a.estado.toLowerCase()}, ${a.tec}</span><span class="d">${d} d, ${nom}</span></li>`;
+  }).join("");
+  $("#corte").textContent = "Corte al "+DATA.corte.split("-").reverse().join("/")+". Días = fecha prometida menos fecha de corte.";
+  $("#stk").innerHTML = DATA.stock.map(s => `<li><span class="nm">${s.n}</span><span class="bar" title="Stock frente al mínimo"><i style="width:${100*s.act/s.min}%"></i></span><span class="q">${s.act} de ${s.min}</span></li>`).join("");
+}
+
+/* ---------- Hallazgos del Capítulo VI ---------- */
+const HALLAZGOS = [
+  ["Los retrasos crecen cada mes","16,7 % en julio, 20,0 % en agosto y 23,3 % en setiembre."],
+  ["La falta de repuesto multiplica el riesgo","80,0 % de tardías entre las detenidas, frente a 14,5 % en el resto."],
+  ["Pero no explica todos los retrasos","24 de las 36 entregas tardías (66,7 %) no tuvieron detención."],
+  ["El aumento de setiembre se concentra en un técnico","Diego Castillo pasó de 18,8 % a 35,5 % de tardías; Jorge Huamán bajó a 10,3 %."],
+  ["Las órdenes ingresadas en lunes se retrasan más","29,4 % de tardías frente a 17,8 % en el resto de días."],
+  ["Hay repuestos críticos a punto de agotarse","Cuatro repuestos con una sola unidad; reposición inmediata."],
+  ["Hay equipos terminados sin entregar","Órdenes 182 y 183 con 7 y 5 días de atraso: falta avisar al cliente."]
+];
+const ESC = [["Base, julio a setiembre",36,20.0,"bad"],["A. Sin detenciones por falta de repuesto",24,13.3,"warn"],["B. A, más un técnico alineado al mejor desempeño",16,8.9,"ok"]];
+function hallazgos(){
+  const O=DATA.orders, tar=x=>x.tardia, r=a=>pct(sum(a,tar),a.length);
+  const pm=MESES.map(m=>r(O.filter(x=>x.mes===m))), sube=pm.every((v,i)=>!i||v>pm[i-1]);
+  const D=O.filter(x=>x.det), ND=O.filter(x=>!x.det), L=O.filter(x=>x.lunes), NL=O.filter(x=>!x.lunes), T=sum(O,tar);
+  return [
+    [sube?"Los retrasos crecen cada mes":"Los retrasos varían por mes", pm.map((v,i)=>nf(v,1)+" % en "+["julio","agosto","setiembre"][i]).join(", ")+"."],
+    ["La falta de repuesto multiplica el riesgo", nf(r(D),1)+" % de tardías entre las detenidas, frente a "+nf(r(ND),1)+" % en el resto."],
+    ["Pero no explica todos los retrasos", sum(ND,tar)+" de las "+T+" entregas tardías ("+nf(pct(sum(ND,tar),T),1)+" %) no tuvieron detención."],
+    HALLAZGOS[3],
+    ["Las órdenes ingresadas en lunes se retrasan más", nf(r(L),1)+" % de tardías frente a "+nf(r(NL),1)+" % en el resto de días."],
+    HALLAZGOS[5], HALLAZGOS[6]
+  ];
+}
+function estaticos(){
+  $("#hal").innerHTML = hallazgos().map(([t,e]) => `<li><strong>${t}</strong><small>${e}</small></li>`).join("");
+  $("#esc").innerHTML = ESC.map(([t,n,p,c]) => `<div class="esc ${c}"><p><span>${t}</span><span>${n} tardías, ${nf(p,1)} %</span></p><div class="tr"><i style="width:${p*3}%"></i></div></div>`).join("");
+}
+
+/* ---------- Render principal ---------- */
+function render(){
+  const mes = $("#fMes").value, tec = $("#fTec").value;
+  const base = DATA.orders.filter(x => tec==="Todos" || x.tec===tec);
+  const o = base.filter(x => mes==="Todos" || x.mes===mes);
+  const AZ = css("--brand"), RJ = css("--red"), AM = css("--amb"), VD = css("--grn"), CL = css("--soft");
+  const f1 = v => nf(v,1)+" %";
+  kpis(o,tec,mes);
+  const byM = MESES.map(m => base.filter(x => x.mes===m));
+
+  draw("c1","line",{labels:MESES,datasets:[
+    {label:"Entregas tardías",data:byM.map(a=>+pct(sum(a,x=>x.tardia),a.length).toFixed(1)),borderColor:RJ,backgroundColor:RJ,tension:.25,labels:true,fmt:f1},
+    {label:"Detenidas por repuesto",data:byM.map(a=>+pct(sum(a,x=>x.det),a.length).toFixed(1)),borderColor:AM,backgroundColor:AM,tension:.25,labels:true,fmt:f1}]},
+    {scales:{y:{beginAtZero:true,suggestedMax:40}},plugins:{meta:{value:10,label:"Meta 10 %"}}});
+
+  const tecs = TECS.filter(t => tec==="Todos" || t===tec);
+  const v2 = tecs.map(t => { const a = DATA.orders.filter(x=>x.tec===t&&(mes==="Todos"||x.mes===mes)); return +pct(a.length-sum(a,x=>x.tardia),a.length).toFixed(1); });
+  draw("c2","bar",{labels:tecs,datasets:[{data:v2,backgroundColor:v2.map(v=>v>=90?VD:v>=80?AM:RJ),labels:true,fmt:f1,maxBarThickness:90}]},
+    {scales:{y:{beginAtZero:true,max:100}},plugins:{meta:{value:90,label:"Meta 90 %"}}});
+
+  const ing = byM.map(a=>sum(a,x=>x.total));
+  draw("c3","bar",{labels:MESES,datasets:[{data:ing,backgroundColor:MESES.map(m=>mes==="Todos"||m===mes?AZ:CL),labels:true,fmt:v=>"S/ "+nf(v),maxBarThickness:90}]},
+    {scales:{y:{beginAtZero:true,suggestedMax:11000}},plugins:tec==="Todos"?{meta:{value:8700,label:"Meta S/ 8 700"}}:{}});
+  $("#n3").textContent = tec==="Todos" ? "Las barras claras quedan fuera del mes seleccionado." : "Con un técnico seleccionado la meta del taller no se muestra.";
+
+  const sv = {}; o.forEach(x => x.svc.forEach(s => { (sv[s] ??= {n:0,t:0}).n++; sv[s].t += x.tardia; }));
+  const nm = Object.keys(sv).sort((a,b)=>sv[b].n-sv[a].n);
+  draw("c4","bar",{labels:nm,datasets:[
+    {label:"Órdenes",data:nm.map(k=>sv[k].n),backgroundColor:AZ,yAxisID:"y",labels:true},
+    {label:"% tardías",type:"line",data:nm.map(k=>+pct(sv[k].t,sv[k].n).toFixed(1)),borderColor:RJ,backgroundColor:RJ,yAxisID:"y1"}]},
+    {scales:{y:{beginAtZero:true},y1:{position:"right",beginAtZero:true,max:100,grid:{drawOnChartArea:false}},x:{ticks:{maxRotation:55,font:{size:10}}}}});
+
+  const tardias = o.filter(x=>x.tardia), con = tardias.filter(x=>x.det).length, sin = tardias.length-con;
+  draw("c7","doughnut",{labels:[`Con falta de repuesto (${con})`,`Sin falta de repuesto (${sin})`],datasets:[{data:[con,sin],backgroundColor:[AM,RJ],borderWidth:0}]},
+    {cutout:"58%",layout:{padding:8},plugins:{legend:{position:"bottom"}}});
+
+  draw("c8","line",{labels:MESES,datasets:TECS.map((t,i)=>({label:t,data:MESES.map(m=>{const a=DATA.orders.filter(x=>x.tec===t&&x.mes===m);return +pct(sum(a,x=>x.tardia),a.length).toFixed(1)}),borderColor:i?RJ:AZ,backgroundColor:i?RJ:AZ,tension:.25,labels:true,fmt:f1}))},
+    {scales:{y:{beginAtZero:true,suggestedMax:45}}});
+
+  const lu = o.filter(x=>x.lunes), ot = o.filter(x=>!x.lunes);
+  draw("c9","bar",{labels:[`Lunes (${lu.length} órdenes)`,`Otros días (${ot.length})`],datasets:[{data:[+pct(sum(lu,x=>x.tardia),lu.length).toFixed(1),+pct(sum(ot,x=>x.tardia),ot.length).toFixed(1)],backgroundColor:[RJ,AZ],labels:true,fmt:f1,maxBarThickness:90}]},
+    {scales:{y:{beginAtZero:true,suggestedMax:45}}});
+
+  const rp = {}; o.forEach(x => Object.entries(x.rep).forEach(([k,q]) => rp[k] = (rp[k]||0)+q));
+  const top = Object.entries(rp).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,8);
+  draw("c5","bar",{labels:top.map(r=>r[0]),datasets:[{data:top.map(r=>r[1]),backgroundColor:AZ,labels:true}]},
+    {indexAxis:"y",scales:{y:{ticks:{font:{size:10}}}}});
+  $("#c5").closest(".panel").querySelector(".note").textContent = `Repuestos de las ${o.length} órdenes entregadas del filtro (${nf(sum(top,r=>r[1]))} de ${nf(sum(Object.values(rp),q=>q))} unidades usadas).`;
+
+  const MP = ["Efectivo","Yape/Plin","Transferencia","Tarjeta"];
+  const pg = DATA.pagos.filter(p => (mes==="Todos"||p.m===mes) && (tec==="Todos"||p.t===tec));
+  const pv = MP.map(m => sum(pg.filter(p=>p.mp===m),p=>p.v)), tp = sum(pv,v=>v);
+  draw("c10","doughnut",{labels:MP.map((m,i)=>`${m} (${nf(pct(pv[i],tp),1)} %)`),datasets:[{data:pv,backgroundColor:[AZ,VD,AM,CL],borderWidth:0}]},
+    {cutout:"58%",layout:{padding:8},plugins:{legend:{position:"bottom"}}});
+  $("#c10").closest(".panel").querySelector(".note").textContent = `${sum(pg,p=>p.n)} pagos confirmados, S/ ${nf(tp)}. El mes es el de la fecha de pago.` + (tec==="Todos" ? (mes==="Todos" ? " Incluye 5 pagos de octubre y las ventas de mostrador." : " Incluye ventas de mostrador.") : ` Solo pagos de órdenes de ${tec}; las ventas de mostrador no tienen técnico.`);
+}
+
+/* ---------- Eventos y tema ---------- */
+function setTheme(t){ document.documentElement.dataset.theme = t; $("#theme").textContent = t==="dark" ? "Modo claro" : "Modo oscuro"; try{localStorage.setItem("fm-theme2",t)}catch(e){} }
+setTheme(document.documentElement.dataset.theme || "dark");
+$("#theme").addEventListener("click",()=>{ setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark"); render(); });
+$("#fMes").addEventListener("change",render); $("#fTec").addEventListener("change",render);
+$("#reset").addEventListener("click",()=>{ $("#fMes").value="Todos"; $("#fTec").value="Todos"; render(); });
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b));["p1","p2"].forEach(id=>{$("#"+id).hidden=id!==b.dataset.p});window.scrollTo(0,0);render();}));
+setTimeout(()=>$("#splash").classList.add("off"),2000);
+$("#print").addEventListener("click",()=>{
+  window._tm=document.documentElement.dataset.theme; setTheme("light");
+  ["p1","p2"].forEach(id=>$("#"+id).hidden=false);
+  render(); setTimeout(()=>window.print(),500);
+});
+window.addEventListener("afterprint",()=>{
+  const on=document.querySelector(".tabs button.on").dataset.p;
+  ["p1","p2"].forEach(id=>$("#"+id).hidden=id!==on);
+  setTheme(window._tm||"light"); render();
+});
+accion(); estaticos(); render();

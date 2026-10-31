@@ -1,3 +1,5 @@
-# Fix Mobile · Sistema de reparaciones
+# Fix Mobile · Dashboard de reparaciones y repuestos
 
-Prototipo web con acceso por roles (gerente, técnico, inventario, atención, cliente) y asistente. Datos ficticios; las contraseñas se validan en el navegador, solo para demostración.
+Capítulo VI (Analítica y visualización de datos). Dos páginas: *Resumen operativo* y *Análisis y hallazgos*, con modo claro y oscuro.
+
+Datos: `data.js`, resumido de `Fix Mobile.db` (sin datos personales). Publicado con GitHub Pages.
