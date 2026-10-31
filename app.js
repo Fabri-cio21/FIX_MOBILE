@@ -8,7 +8,7 @@ E={Ingresado:'En Proceso','En Proceso':'Terminado',Terminado:'Entregado'},
 tg=e=>`<span class="tag ${{Entregado:'m',Terminado:'l','En Proceso':'p'}[e]||'s'}">${e}</span>`,vc=o=>o.est!='Entregado'&&o.fp<D.corte;
 async function L(e){e.preventDefault();const u=S.us.find(x=>x.u==$('#u').value.trim().toLowerCase());
  if(u&&u.h==await H($('#pw').value)){me=u;sessionStorage.setItem('me',JSON.stringify(u));boot()}else $('#er').textContent='Usuario o contraseña incorrectos.';return false}
-function boot(){$('#login').hidden=!!me;$('#app').hidden=!me;$('#bb').hidden=!me;if(!me)return;$('#rl').textContent=R[me.r];$('#nm').textContent=me.n;
+let lg=0;const showL=()=>{lg=1;boot();$('#u').focus()};function boot(){$('#pub').hidden=!!me||lg;$('#login').hidden=!!me||!lg;$('#app').hidden=!me;if(!me)return;$('#rl').textContent=R[me.r];$('#nm').textContent=me.n;
  $('#nv').innerHTML=M[me.r].map(v=>`<button onclick="go('${v}')">${v}</button>`).join('');go(M[me.r][0])}
 function go(v){cur=v;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.textContent==v));$('#ti').textContent=v;$('#vw').innerHTML=V[v]()}
 function tbl(a,f){return`<div class="tw"><table><tr><th>#<th>Cliente<th>Equipo<th>Estado<th>Técnico<th>Prometida${f?'<th>':''}</tr>`+a.map(o=>`<tr><td>${o.id}<td>${o.cl}<td>${o.eq}<td>${tg(o.est)}<td>${o.tec||'—'}<td class="${vc(o)?'sal':''}">${o.fp}${f?'<td>'+f(o):''}`).join('')+'</table></div>'}
@@ -29,11 +29,13 @@ function NO(e){e.preventDefault();const id=Math.max(...S.ord.map(o=>o.id))+1,d=n
 async function ST(e){e.preventDefault();S.pend.push({n:$('#a1').value,u:$('#a2').value.toLowerCase(),h:await H($('#a3').value),by:me.n});save();go(cur);return false}
 const nz=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 function bot(q){q=nz(q);const m=q.match(/\d{3}/);
- if(m){const o=S.ord.find(x=>x.id==m[0]);return!o||(me.r=='cliente'&&o.cl!=me.cl)?'No encuentro esa orden en tu cuenta.':`Orden ${o.id}: ${o.est}, técnico ${o.tec||'por asignar'}, fecha prometida ${o.fp}.`}
- if(/stock|repuesto|inventario/.test(q)){if(me.r=='cliente')return'El inventario es interno. Atención puede confirmarte si hay repuesto para tu equipo.';const l=S.stk.filter(s=>s[1]<s[2]);return l.length?'Bajo el mínimo: '+l.map(s=>`${s[0]} (${s[1]} de ${s[2]})`).join(', ')+'.':'Todo el stock está sobre el mínimo.'}
+ if(m){const o=S.ord.find(x=>x.id==m[0]);return!o||(me&&!me||me.r=='cliente'&&o.cl!=me.cl)?'No encuentro esa orden en tu cuenta.':`Orden ${o.id}: ${o.est}, ${me?'técnico '+(o.tec||'por asignar')+', ':''}fecha prometida ${o.fp}.`}
+ if(/stock|repuesto|inventario/.test(q)){if(!me||me.r=='cliente')return'El inventario es interno. Atención puede confirmarte si hay repuesto para tu equipo.';const l=S.stk.filter(s=>s[1]<s[2]);return l.length?'Bajo el mínimo: '+l.map(s=>`${s[0]} (${s[1]} de ${s[2]})`).join(', ')+'.':'Todo el stock está sobre el mínimo.'}
  if(/precio|costo|cuanto|servicio/.test(q))return'Precios base: '+D.svc.map(s=>`${s[0]} S/ ${s[1]}`).join('; ')+'. El total depende del repuesto.';
- if(/tard|retras|cumpl/.test(q))return me.r=='cliente'?'Ese dato es interno.':'Entregas tardías: 20,0 % (36 de 180). Meta: 10 % o menos.';
+ if(/tard|retras|cumpl/.test(q))return !me||me.r=='cliente'?'Ese dato es interno.':'Entregas tardías: 20,0 % (36 de 180). Meta: 10 % o menos.';
  if(/tecnico|agregar|nuevo/.test(q))return'Atención solicita al técnico y el gerente lo aprueba en la sección Equipo.';
  return'Puedo ayudarte con: estado de una orden (escribe su número), stock de repuestos, precios de servicios y entregas tardías.'}
 function Q(e){e.preventDefault();const i=$('#bi'),m=$('#bm');m.innerHTML+=`<p class="u"></p><p>${bot(i.value)}</p>`;m.children[m.children.length-2].textContent=i.value;i.value='';m.scrollTop=1e9;return false}
+function TK(e){e.preventDefault();const o=S.ord.find(x=>x.id==$('#tn').value.replace(/\D/g,''));$('#tk').innerHTML=o?`<div class="c"><span class="lbl">Orden #${o.id}</span><div class="steps">${['Ingresado','En Proceso','Terminado','Entregado'].map((s,i,A)=>`<div class="${i<=A.indexOf(o.est)?'on':''}">${s}</div>`).join('')}</div><small>Fecha prometida: ${o.fp}</small></div>`:'<p class="sal">No encontramos esa orden. En esta demostración existen las órdenes 178 a 186.</p>';return false}
+$('#sv').innerHTML=D.svc.map(s=>`<div class="c"><h3>${s[0]}</h3><small>Desde S/ ${s[1]}</small></div>`).join('');
 boot()
